@@ -37,6 +37,7 @@ services:
     ports:
       - "8080:8080"
       - "26257:26257"
+    command: start-single-node --insecure
 
 networks:
   custom-network:
