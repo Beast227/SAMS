@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  /* System Brand - Slate Blue Tint */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  
+  /* Telemetry Status Colors */
+  --color-status-success: #10b981;    /* Healthy */
+  --color-status-warning: #f59e0b;    /* High Usage (70-85%) */
+  --color-status-critical: #ef4444;   /* Damage/Critical (>90%) */
+  --color-status-info: #0ea5e9;       /* Updates/System info */
+
+  /* Neutral Surface Palette - Light Mode */
+  --background: #f8fafc;        /* Slate-50 */
+  --foreground: #0f172a;        /* Slate-900 */
+  --color-card: #ffffff;
+  --color-card-border: #e2e8f0;
+  --color-panel: #f1f5f9;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode - Deep Navy Slate */
+    --background: #020617;      /* Slate-950 */
+    --foreground: #f8fafc;
+    
+    --color-card: #0f172a;            /* Slate-900 */
+    --color-card-border: #1e293b;     /* Slate-800 */
+    --color-panel: #1e293b;
+
+    --color-primary: #3b82f6;
+    --color-status-success: #34d399;
+    --color-status-warning: #fbbf24;
+    --color-status-critical: #f87171;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
