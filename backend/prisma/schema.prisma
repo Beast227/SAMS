@@ -1,0 +1,73 @@
+
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum Status {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  username     String   @unique
+  passwordHash String
+  role         Role     @default(VIEWER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assets       Asset[]
+}
+
+model Asset {
+  id         String      @id @default(uuid()) @db.Uuid
+  macAddr    String      @unique
+  cpuName    String?
+  status     Status      @default(OFFLINE)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  ownerId    String?     @db.Uuid
+  owner      User?       @relation(fields: [ownerId], references: [id])
+  telemetry  Telemetry[]
+  alerts     Alert[]
+}
+
+model Telemetry {
+  id                   String   @id @default(uuid()) @db.Uuid
+  assetId              String   @db.Uuid
+  asset                Asset    @relation(fields: [assetId], references: [id])
+  cpuTotalUsagePercent Float
+  cpuPerCoreUsage      Json?
+  cpuFrequency         Float?
+  cpuTemperature       Float?
+  memoryTotal          Float
+  memoryAvailable      Float?
+  memoryUsed           Float
+  memoryUsagePercent   Float
+  batteryPercent       Float?
+  batteryPowerPlugged  Boolean?
+  batterySecondsLeft   Int?
+  timestamp            DateTime @default(now())
+}
+
+model Alert {
+  id         String   @id @default(uuid()) @db.Uuid
+  assetId    String   @db.Uuid
+  asset      Asset    @relation(fields: [assetId], references: [id])
+  type       String
+  message    String
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
