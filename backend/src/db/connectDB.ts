@@ -1,17 +1,21 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
-const sequelize = new Sequelize(
-    process.env.DB_NAME || "",
-    process.env.DB_USER || "",
-    process.env.DB_PASSWORD || "",
-    {
-        host: process.env.DB_HOST,
-        dialect: 'mysql',
-        logging: false,
-    }
-)
+dotenv.config();
 
-export {
-    sequelize
-}
+const connectionString = process.env.DB_URL || "localhost";
+
+const sequelize = new Sequelize(
+    connectionString, {
+        dialect: 'postgres',
+        logging: false,
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
+        }
+    }
+);
+
+export default sequelize;
