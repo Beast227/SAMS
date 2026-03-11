@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getHistoryTelemetry } from "./controllers/telemetryController.js";
+import { getHistoryTelemetry } from "./controller/telemetryController.js";
 import verifyUser from "../users/controller/userAuthMiddleware.js";
 
 
