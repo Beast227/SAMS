@@ -22,3 +22,7 @@ export interface ISystemTelemetryPayload {
     seconds_left: number | null;
   };
 }
+
+export interface Params {
+  assetId: string;
+}
