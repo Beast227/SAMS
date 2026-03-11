@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
-import { useLoginMutation } from '../../hooks/useAuth';
+import { useLoginMutation } from '../../hooks/queries/useAuth';
 import Button from '../ui/Button';
 
 export default function Login() {
@@ -37,7 +37,7 @@ export default function Login() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="hellosir"
+                placeholder="username"
                 className="w-full bg-(--color-panel) border border-(--color-card-border) rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
               />
             </div>

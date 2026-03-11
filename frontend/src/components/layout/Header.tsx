@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, Bell, Search, LogOut, Cpu, X, Plus, Trash2, AlertCircle, PlusCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useDashboardStore } from '../../store/useDashBoardStore';
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -9,6 +10,7 @@ export default function Header() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State for the Modal
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const activeAlerts = useDashboardStore((state) => state.activeAlerts);
 
   const getPageTitle = (path: string) => {
     if (path.includes('/dashboard/')) return 'Asset Details';
@@ -54,8 +56,9 @@ export default function Header() {
 
           <button className="p-2 text-gray-500 hover:bg-(--color-panel) rounded-full transition-colors relative cursor-pointer">
             <Bell size={20} />
-            {/* Red Dot indicator only if present: TODO*/}
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-(--color-card)"></span>
+            {activeAlerts > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-(--color-card) animate-pulse" />
+            )}
           </button>
 
           <span className="absolute top-full mt-2 px-2 py-1 bg-gray-800 text-white text-[10px] font-medium rounded shadow-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">

@@ -1,6 +1,14 @@
 export type AssetStatus = "ONLINE" | "OFFLINE" | "MAINTENANCE";
 export type AlertSeverity = "INFO" | "WARNING" | "CRITICAL";
 
+
+export type Stats = {
+  totalAssets: number;
+  onlineAssets: number;
+  offlineAssets: number;
+  activeAlerts: number;
+};
+
 export interface TelemetryData {
   cpuTotalUsagePercent: number;
   cpuTemperature: number;

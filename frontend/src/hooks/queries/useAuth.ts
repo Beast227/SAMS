@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { SERVER_URL } from "../config/config";
-import { useAuthStore } from "../store/useAuthStore"; 
+import { SERVER_URL } from "../../config/config";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export const useLoginMutation = () => {
   const navigate = useNavigate();
