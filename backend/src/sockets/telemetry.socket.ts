@@ -86,6 +86,8 @@ export const setUpTelemetrySocket = (io: Server) => {
 
     socket.on("disconnect", async () => {
       const disconnectedMac = socket.data.mac_address;
+      if (!disconnectedMac) return;
+
       if (disconnectedMac) {
         try {
           const asset = await prisma.asset.update({
@@ -94,14 +96,14 @@ export const setUpTelemetrySocket = (io: Server) => {
             select: { ownerId: true },
           });
 
-          console.log(`Asset ${disconnectedMac} marked as offline`);
-
           if (asset.ownerId) {
             io.to(`user_room_${asset.ownerId}`).emit("asset_status_change", {
               macAddr: disconnectedMac,
               status: "OFFLINE",
             });
           }
+
+          console.log(`${disconnectedMac} went offline`);
         } catch (error) {
           console.error(`Offline update failed for ${disconnectedMac}`);
         }
