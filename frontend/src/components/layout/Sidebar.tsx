@@ -19,7 +19,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const mainNav = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Inventory', path: '/inventory', icon: Monitor },
-    { label: 'Alerts', path: '/alerts', icon: Bell },
+    { label: 'Alert Logs', path: '/alerts', icon: Bell },
   ];
 
   const secondaryNav = [
