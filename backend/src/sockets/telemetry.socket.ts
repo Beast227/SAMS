@@ -1,14 +1,14 @@
-import { prisma } from "../../db/prisma.js";
+import { prisma } from "../lib/prisma.js";
 import { Server, Socket } from "socket.io";
-import redisClient from "../../lib/redis.js";
-import { ISystemTelemetryPayload } from "../types.js";
-import { IAsset } from "../../types/asset.type.js";
-import { ITelemetry } from "../../types/telemetry.type.js";
+import redisClient from "../lib/redis.js";
+import { ISystemTelemetryPayload } from "../types/telemetry.type.js";
+import type { Asset, Telemetry } from "../generated/prisma/client.js";
 
 export const setUpTelemetrySocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {
     console.log(`New connection established: ${socket.id}`);
 
+    // handle dashboard user joining the room
     const userId = socket.handshake.auth.userId;
     if (userId) {
       socket.join(`user_room_${userId}`);
@@ -34,11 +34,7 @@ export const setUpTelemetrySocket = (io: Server) => {
             where: { macAddr: mac_address },
             select: { id: true },
           });
-
-          if (!asset) {
-            console.warn(`Unauthorized device: ${mac_address}`);
-            return;
-          }
+          if (!asset) return;
 
           // cache the assetId mapped to the mac_addr
           assetId = asset.id as string;
@@ -50,6 +46,7 @@ export const setUpTelemetrySocket = (io: Server) => {
           });
         }
 
+        // mark the asset online and add the new telemetry to the db
         const [updatedAsset, telemetryRecord] = (await prisma.$transaction([
           prisma.asset.update({
             where: { id: assetId },
@@ -73,10 +70,11 @@ export const setUpTelemetrySocket = (io: Server) => {
               timestamp: new Date(timestamp * 1000),
             },
           }),
-        ])) as [IAsset, ITelemetry];
+        ])) as [Asset, Telemetry];
 
+        // if user is online then update the data to the owners room
         if (updatedAsset.ownerId) {
-          io.to(`user_room_${userId}`).emit("dashboard_update", {
+          io.to(`user_room_${updatedAsset.ownerId}`).emit("dashboard_update", {
             mac_address,
             latestTelemetry: telemetryRecord,
           });
@@ -87,27 +85,25 @@ export const setUpTelemetrySocket = (io: Server) => {
     });
 
     socket.on("disconnect", async () => {
-      console.log(`Client disconnected: ${socket.id}`);
-
       const disconnectedMac = socket.data.mac_address;
-      console.log(disconnectedMac);
       if (disconnectedMac) {
         try {
-          await prisma.asset.update({
+          const asset = await prisma.asset.update({
             where: { macAddr: disconnectedMac },
             data: { status: "OFFLINE" },
+            select: { ownerId: true },
           });
 
           console.log(`Asset ${disconnectedMac} marked as offline`);
 
-          io.emit("asset_status_change", {
-            macAddr: disconnectedMac,
-            status: "OFFLINE",
-          });
+          if (asset.ownerId) {
+            io.to(`user_room_${asset.ownerId}`).emit("asset_status_change", {
+              macAddr: disconnectedMac,
+              status: "OFFLINE",
+            });
+          }
         } catch (error) {
-          console.error(
-            `Failed to update offline status for ${disconnectedMac}`,
-          );
+          console.error(`Offline update failed for ${disconnectedMac}`);
         }
       }
     });
