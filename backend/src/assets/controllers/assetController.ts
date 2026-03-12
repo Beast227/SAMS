@@ -5,10 +5,10 @@ import { Status } from "../../generated/prisma/enums.js";
 
 const addAsset = async (req: AuthRequest, res: Response) => {
   try {
-    const { macAddress } = req.body;
+    const { devices } = req.body;
 
-    if (!macAddress || !Array.isArray(macAddress) || macAddress.length === 0) {
-      return res.status(400).json({ message: "macAddresses array is required" });
+    if (!devices || !Array.isArray(devices) || devices.length === 0) {
+      return res.status(400).json({ message: "Assets array is required" });
     }
 
     if (!req.user) {
@@ -17,8 +17,9 @@ const addAsset = async (req: AuthRequest, res: Response) => {
 
     const userId = req.user.id;
 
-    const assetsData = macAddress.map((mac: string) => ({
-      macAddr: mac,
+    const assetsData = devices.map((device: { name: string; mac: string }) => ({
+      name: device.name,
+      macAddr: device.mac,
       status: Status.OFFLINE,
       ownerId: userId,
     }));
@@ -29,7 +30,7 @@ const addAsset = async (req: AuthRequest, res: Response) => {
     });
 
     res.status(201).json({
-      message: "Assets successfully registered and assigned",
+      message: "Assets successfully registered",
       createdCount: assets.count,
     });
   } catch (error) {
@@ -79,24 +80,22 @@ const deleteAsset = async (req: AuthRequest, res: Response) => {
 
     const { macAddress } = req.body;
     if (!macAddress) {
-      return res.status(400).json({ message: "Please provide the mac address for deletion" });
+      return res
+        .status(400)
+        .json({ message: "Please provide the mac address for deletion" });
     }
 
     await prisma.asset.delete({
       where: {
-        macAddr: macAddress
-      }
+        macAddr: macAddress,
+      },
     });
 
     return res.status(201).json({ message: "Successfully deleted asset" });
   } catch (error) {
-    console.log("Error while deleting the asset: " , error);
+    console.log("Error while deleting the asset: ", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
-
-export { 
-  addAsset, 
-  getAssets,
-  deleteAsset,
 };
+
+export { addAsset, getAssets, deleteAsset };
