@@ -1,7 +1,8 @@
-import { prisma } from "../../lib/prisma.js";
-import { AuthRequest } from "../../users/controller/userAuthMiddleware.js";
-import { Response } from "express";
 import { Status } from "../../generated/prisma/enums.js";
+import { Response } from "express";
+import { AuthRequest } from "../../users/controller/userAuthMiddleware.js";
+import { prisma } from "../../lib/prisma.js";
+
 
 const addAsset = async (req: AuthRequest, res: Response) => {
   try {
@@ -78,18 +79,18 @@ const deleteAsset = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const { macAddress } = req.body;
+    const { macAddress } = req.query;
     if (!macAddress) {
       return res
         .status(400)
         .json({ message: "Please provide the mac address for deletion" });
     }
 
-    await prisma.asset.delete({
-      where: {
-        macAddr: macAddress,
-      },
-    });
+    await prisma.$transaction([
+      prisma.alert.deleteMany({ where: { asset: { macAddr: macAddress as string } } }),
+      prisma.telemetry.deleteMany({ where: { asset: { macAddr: macAddress as string } } }),
+      prisma.asset.delete({ where: { macAddr: macAddress as string} })
+    ]);
 
     return res.status(201).json({ message: "Successfully deleted asset" });
   } catch (error) {
@@ -98,4 +99,43 @@ const deleteAsset = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export { addAsset, getAssets, deleteAsset };
+const updateAsset = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const { id } = req.query;
+    const { name } = req.body;
+
+    if (!id || !name) {
+      return res.status(400).json({ message: "Asset ID and new name are required" });
+    }
+
+    // Verify the asset belongs to the user before updating
+    const existingAsset = await prisma.asset.findUnique({
+      where: { id: id as string}
+    });
+
+    if (!existingAsset || existingAsset.ownerId !== req.user.id) {
+      return res.status(404).json({ message: "Asset not found or unauthorized" });
+    }
+
+    const updatedAsset = await prisma.asset.update({
+      where: { id: id as string },
+      data: { name: name }
+    });
+
+    return res.status(200).json({ 
+      message: "Successfully updated asset",
+      asset: updatedAsset
+    });
+
+  } catch (error) {
+    console.log("Error while updating the asset: ", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export { addAsset, getAssets, deleteAsset, updateAsset };
