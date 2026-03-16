@@ -112,5 +112,48 @@ const getAlerts = async (req: AuthRequest, res: Response): Promise<void> => {
     }
 };
 
+const handleResolveAlerts = async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.user || !req.user.id) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
 
-export { getAlerts };
+        const { assetId } = req.params;
+
+        if (!assetId) {
+            res.status(400).json({ message: "Asset ID is required" });
+            return;
+        }
+
+        const existingAsset = await prisma.asset.findUnique({
+            where: { id: assetId as string }
+        });
+
+        if (!existingAsset || existingAsset.ownerId !== req.user.id) {
+            res.status(403).json({ message: "Asset not found or you do not have permission to modify it." });
+            return;
+        }
+
+        const updatedAlerts = await prisma.alert.updateMany({
+            where: {
+                assetId: assetId as string,
+                isResolved: false
+            },
+            data: {
+                isResolved: true
+            }
+        });
+
+        res.status(200).json({ message: "Successfully resolved alerts", resolvedCount: updatedAlerts.count });
+    } catch (error) {
+        console.error("Error while resolving asset alerts: ", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+export {
+    getAlerts,
+    handleResolveAlerts
+}
