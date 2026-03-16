@@ -9,7 +9,7 @@ export const useResolveAlerts = () => {
 
     return useMutation({
         mutationFn: async (assetId: string) => {
-            const response = await fetch(`${SERVER_URL}/api/alert/resolve-asset/${assetId}`, {
+            const response = await fetch(`${SERVER_URL}/api/alert/${assetId}`, {
                 method: "PATCH",
                 headers: {
                     "authorization": `Bearer ${token}`,

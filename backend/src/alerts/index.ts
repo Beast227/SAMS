@@ -6,6 +6,6 @@ import verifyUser from "../users/controller/userAuthMiddleware.js";
 const router = Router();
 
 router.get('/', verifyUser , getAlerts)
-router.patch('/', verifyUser, handleResolveAlerts);
+router.patch('/:assetId', verifyUser, handleResolveAlerts);
 
 export default router;

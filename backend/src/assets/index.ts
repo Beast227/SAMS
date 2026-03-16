@@ -17,10 +17,10 @@ const router = Router();
 router
   .post("/add", verifyUser, addAsset)
   .get("/", verifyUser, getAssets)
+  .get("/report", verifyUser, getWarRoomAlerts)
   .get("/analysis", verifyUser, getDashboardSummary) // Moved before /:id
   .get("/:id", verifyUser, getAssetById)
   .delete("/delete", verifyUser, deleteAsset)
   .put("/", verifyUser, updateAsset)
-  .get("/report", verifyUser, getWarRoomAlerts);
 
 export default router;
